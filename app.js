@@ -1,8 +1,4 @@
-// File: app.js
-
-// ▼▼▼ あなたのWorkerのURL（設定済み） ▼▼▼
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 let currentResult = null; // 直近の生成結果を保持
 let currentRating = 0;

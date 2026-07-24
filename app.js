@@ -1,4 +1,3 @@
-// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -170,7 +169,7 @@ $("generateBtn").addEventListener("click", async () => {
       planNote = `\n🧭 今回の計画: ${flow}${summary}`;
     }
 
-    // 【新】外部ツール連携の表示
+    // 外部ツール連携の表示
     let toolNote = "";
     if (data.tools) {
       const ok = [];

@@ -1,4 +1,3 @@
-// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;

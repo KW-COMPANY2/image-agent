@@ -1,0 +1,125 @@
+<!-- Output: html -->
+<!-- File: index.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imagenic AI｜賢くなり続けるイメージ画像AIエージェント</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <h1 class="brand-name">Imagenic&nbsp;AI</h1>
+    </div>
+    <p class="subtitle">カテゴリを選ぶだけ。<strong>使うほど賢くなる</strong>イメージ画像エージェント。</p>
+  </header>
+
+  <main class="container">
+    <!-- 入力エリア -->
+    <section class="card">
+      <h2><span class="step-badge">01</span> 生成条件を指定</h2>
+
+      <label for="category">コンテンツカテゴリ</label>
+      <select id="category">
+        <option value="医療・介護">医療・介護</option>
+        <option value="美容・健康">美容・健康</option>
+        <option value="不動産・建築">不動産・建築</option>
+        <option value="金融・経済">金融・経済</option>
+        <option value="法律">法律</option>
+        <option value="葬儀">葬儀</option>
+        <option value="通販">通販</option>
+        <option value="免許・資格">免許・資格</option>
+        <option value="レジャー・観光">レジャー・観光</option>
+        <option value="人材">人材</option>
+        <option value="アパレル">アパレル</option>
+        <option value="自動車">自動車</option>
+        <option value="結婚">結婚</option>
+        <option value="飲食">飲食</option>
+        <option value="スポーツ">スポーツ</option>
+        <option value="ペット">ペット</option>
+        <option value="生活用品">生活用品</option>
+        <option value="雑貨">雑貨</option>
+        <option value="サービス">サービス</option>
+        <option value="IT">IT</option>
+        <option value="機械・材料">機械・材料</option>
+        <option value="家電">家電</option>
+        <option value="カウンセリング・相談">カウンセリング・相談</option>
+        <option value="教育">教育</option>
+        <option value="ヘアサロン">ヘアサロン</option>
+        <option value="エステ・マッサージ">エステ・マッサージ</option>
+        <option value="化粧品">化粧品</option>
+        <option value="美容整形">美容整形</option>
+        <option value="ベビー">ベビー</option>
+        <option value="インテリア">インテリア</option>
+        <option value="住宅">住宅</option>
+      </select>
+
+      <label for="keyword">キーワード（任意・アバウトでOK）</label>
+      <input type="text" id="keyword" placeholder="例：安心感、清潔、未来的 など" />
+
+      <label for="usage">画像の用途</label>
+      <select id="usage">
+        <option value="header">ヘッダー画像（大きめ・最優先表示）</option>
+        <option value="inline">本文中の挿絵</option>
+      </select>
+
+      <div class="checkbox-row">
+        <label><input type="checkbox" id="needAttr" checked /> alt属性・fetchpriority属性も生成する</label>
+      </div>
+
+      <button id="generateBtn" class="primary-btn">✨ </button>
+    </section>
+
+    <!-- 出力エリア -->
+    <section class="card result-card" id="resultCard" hidden>
+      <h2><span class="step-badge">02</span> 生成結果</h2>
+      <div id="statusArea" class="status"></div>
+
+      <div class="result-image-wrap">
+        <img id="resultImage" alt="生成された画像" />
+      </div>
+
+      <div id="attrArea" class="attr-area" hidden>
+        <label>alt属性</label>
+        <textarea id="altText" rows="2"></textarea>
+        <label>fetchpriority属性</label>
+        <input type="text" id="fetchPriority" readonly />
+        <label>コピー用HTMLタグ</label>
+        <textarea id="htmlTag" rows="3" readonly></textarea>
+      </div>
+
+      <!-- Closed Loop：フィードバック -->
+      <div class="feedback-area">
+        <h3><span class="loop-icon">↻</span> この結果を評価（次回の精度向上に使われます）</h3>
+        <div class="rating">
+          品質評価：
+          <span class="stars" id="stars">
+            <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+          </span>
+        </div>
+        <textarea id="fixComment" rows="2" placeholder="修正してほしかった点があれば記入（学習に活用されます）"></textarea>
+        <div class="feedback-btns">
+          <button id="approveBtn" class="approve-btn">✅ 採用する</button>
+          <button id="rejectBtn" class="reject-btn">❌ 却下する</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 改善ダッシュボード -->
+    <section class="card dashboard">
+      <h2><span class="loop-icon">↻</span> 学習ダッシュボード<span class="loop-label">Closed Loop Status</span></h2>
+      <button id="loadStatsBtn" class="secondary-btn">最新の学習状況を読み込む</button>
+      <div id="statsArea" class="stats-grid"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>Imagenic AI — Powered by Cloudflare Workers AI &amp; Gemini API</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

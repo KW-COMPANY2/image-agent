@@ -1,4 +1,3 @@
-// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -117,7 +116,6 @@ $("generateBtn").addEventListener("click", async () => {
       : "（簡易プロンプトで生成：Gemini枠回復後はより高品質に）";
     const levelNote = data.realismLabel ? `｜表現: ${data.realismLabel}` : "";
 
-    // 【新】品質スコア・自動改善の表示（採点が取れた場合のみ）
     let qualityNote = "";
     if (data.qualityScore !== null && data.qualityScore !== undefined) {
       const improved = data.autoImproved ? "／自動改善済み🔧" : "";
@@ -126,7 +124,7 @@ $("generateBtn").addEventListener("click", async () => {
         qualityNote += `（AI講評: ${data.qualityComment}）`;
       }
     }
-    // 【新】回避したNGナレッジ件数（あれば表示）
+
     const ngNote =
       data.referencedNg && data.referencedNg > 0
         ? `｜回避傾向: ${data.referencedNg}件`
@@ -227,7 +225,6 @@ $("loadStatsBtn").addEventListener("click", async () => {
   try {
     const res = await fetch(`${WORKER_URL}/stats`);
     const s = await res.json();
-    // 【新】平均品質スコアのボックスを追加（値が取れない場合は0表示）
     const avgQ =
       s.avgQualityScore !== undefined && s.avgQualityScore !== null
         ? s.avgQualityScore

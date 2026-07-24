@@ -1,3 +1,4 @@
+// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -76,10 +77,23 @@ function taskLabel(t) {
 function branchLabel(b) {
   const map = {
     as_is: "そのまま採用",
-    improved: "品質改善で再生成🔧",
+    improved: "弱点特化で再生成🔧",
     sanitized: "安全化で差し替え🛡",
   };
   return map[b] || b;
+}
+
+// 評価軸名を日本語ラベルに変換
+function axisLabel(a) {
+  const map = {
+    quality: "品質",
+    relevance: "適合",
+    safety: "安全",
+    diversity: "多様",
+    aesthetics: "美的",
+    clarity: "明瞭",
+  };
+  return map[a] || a;
 }
 
 // 生成ボタン
@@ -98,9 +112,8 @@ $("generateBtn").addEventListener("click", async () => {
   $("downloadBtn").hidden = true;
   setProgress(1);
   $("statusArea").textContent =
-    "① 計画立案 → ② プロンプト設計 → ③ 画像生成 → ④ 多角評価 …";
+    "① 計画立案 → ② 複数案設計＆選抜 → ③ 画像生成 → ④ 6軸評価 …";
 
-  // 体感の進捗を進める（実処理は一括だが利用者に流れを見せる）
   const p2 = setTimeout(() => setProgress(2), 1200);
   const p3 = setTimeout(() => setProgress(3), 3000);
 
@@ -111,7 +124,6 @@ $("generateBtn").addEventListener("click", async () => {
       body: JSON.stringify({ category, keyword, usage, needAttr, realism }),
     });
 
-    // 本当のエラー内容を取得して表示
     if (!res.ok) {
       let detail = "";
       try {
@@ -148,22 +160,37 @@ $("generateBtn").addEventListener("click", async () => {
       planNote = `\n🧭 今回の計画: ${flow}${summary}`;
     }
 
-    // 多角評価の表示（4軸＋総合＋判定分岐）
+    // 【新】Best-of-N（候補比較）の表示
+    let candNote = "";
+    if (data.candidates && data.candidates.count > 1) {
+      const idx = data.candidates.chosenIndex;
+      const scores = Array.isArray(data.candidates.scores)
+        ? data.candidates.scores.map((s) => (s === null ? "-" : s)).join("/")
+        : "";
+      candNote = `\n🎯 複数案から選抜: ${data.candidates.count}案中 第${idx + 1}案を採用`;
+      if (scores) candNote += `（各案スコア: ${scores}）`;
+    }
+
+    // 【新】6軸評価の表示
     let evalNote = "";
     if (data.evaluation && data.evaluation.axes) {
       const a = data.evaluation.axes;
       const fmt = (v) => (v === null || v === undefined ? "-" : v);
       evalNote =
-        `\n📊 多角評価: 品質${fmt(a.quality)}/適合${fmt(a.relevance)}/安全${fmt(a.safety)}/多様${fmt(a.diversity)}` +
+        `\n📊 6軸評価: 品質${fmt(a.quality)}/適合${fmt(a.relevance)}/安全${fmt(a.safety)}` +
+        `/多様${fmt(a.diversity)}/美的${fmt(a.aesthetics)}/明瞭${fmt(a.clarity)}` +
         `｜総合${data.evaluation.overall === null ? "-" : data.evaluation.overall}点`;
+      // 弱点軸の表示
+      if (Array.isArray(data.evaluation.weakAxes) && data.evaluation.weakAxes.length > 0) {
+        evalNote += `\n🔍 弱点軸: ${data.evaluation.weakAxes.map(axisLabel).join("・")}`;
+      }
       if (data.evaluation.moderationFlagged) {
-        evalNote += `｜⚠モデレーション: ${data.evaluation.moderationReason || "要注意"}`;
+        evalNote += `\n⚠ モデレーション: ${data.evaluation.moderationReason || "要注意"}`;
       }
       if (data.evaluation.critique) {
         evalNote += `\n💬 AI講評: ${data.evaluation.critique}`;
       }
     } else if (data.qualityScore !== null && data.qualityScore !== undefined) {
-      // 後方互換：evaluationが無い場合は旧来の品質スコアを表示
       evalNote = `\n📊 品質: ${data.qualityScore}点`;
       if (data.qualityComment) evalNote += `（AI講評: ${data.qualityComment}）`;
     }
@@ -174,18 +201,16 @@ $("generateBtn").addEventListener("click", async () => {
       branchNote = `\n✅ 判定: ${branchLabel(data.decisionBranch)}`;
     }
 
-    // 回避したNGナレッジ件数（あれば表示）
     const ngNote =
       data.referencedNg && data.referencedNg > 0
         ? `｜回避傾向: ${data.referencedNg}件`
         : "";
 
-    // 改行を活かして表示するため、textContentではなくwhite-space対応で表示
     const statusEl = $("statusArea");
     statusEl.style.whiteSpace = "pre-line";
     statusEl.textContent =
       `✅ 生成完了 ${geminiNote}${levelNote}｜参照ナレッジ: ${data.referencedKnowledge}件${ngNote}` +
-      planNote + evalNote + branchNote;
+      planNote + candNote + evalNote + branchNote;
 
     if (needAttr) {
       $("attrArea").hidden = false;
@@ -197,7 +222,6 @@ $("generateBtn").addEventListener("click", async () => {
       $("attrArea").hidden = true;
     }
 
-    // 少し余韻を置いて進捗を閉じる
     setTimeout(() => setProgress(0), 800);
   } catch (e) {
     clearTimeout(p2);
@@ -233,7 +257,6 @@ $("copyTagBtn").addEventListener("click", async () => {
     await navigator.clipboard.writeText(text);
     showToast("HTMLタグをコピーしました");
   } catch (_) {
-    // クリップボードAPI非対応時のフォールバック
     const ta = $("htmlTag");
     ta.removeAttribute("readonly");
     ta.select();

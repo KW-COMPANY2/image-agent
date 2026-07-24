@@ -169,6 +169,49 @@ select:focus, input:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(193,105,79,0.18);
 }
 
+/* 抽象度3段階セレクター */
+.realism-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+.realism-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  background: #fdfbf7;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  font-family: inherit;
+  color: var(--ink);
+}
+.realism-opt:hover { transform: translateY(-1px); }
+.realism-opt .ro-title {
+  font-weight: 800;
+  font-size: 0.92rem;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+}
+.realism-opt .ro-desc {
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  line-height: 1.4;
+}
+.realism-opt.active {
+  border-color: var(--terra);
+  background: rgba(193,105,79,0.1);
+  box-shadow: 0 0 0 3px rgba(193,105,79,0.14);
+}
+.realism-opt.active .ro-title { color: var(--terra-dark); }
+@media (max-width: 480px) {
+  .realism-selector { grid-template-columns: 1fr; }
+}
+
 .checkbox-row { margin: 18px 0 4px; }
 .checkbox-row label { display: inline; font-weight: 400; color: var(--ink); }
 
@@ -214,14 +257,73 @@ select:focus, input:focus, textarea:focus {
   border: 1px solid var(--border);
 }
 
+/* 進捗インジケーター */
+.progress-steps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 14px;
+  counter-reset: pstep;
+}
+.progress-steps li {
+  flex: 1 1 auto;
+  min-width: 110px;
+  position: relative;
+  padding: 8px 10px 8px 34px;
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  background: var(--paper-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  counter-increment: pstep;
+}
+.progress-steps li::before {
+  content: counter(pstep);
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.7rem;
+  background: var(--border-strong);
+  color: #fbf8f2;
+}
+.progress-steps li.active {
+  color: var(--terra-dark);
+  border-color: var(--terra);
+  background: rgba(193,105,79,0.1);
+}
+.progress-steps li.active::before { background: var(--terra); }
+.progress-steps li.done {
+  color: var(--forest-dark);
+  border-color: var(--forest);
+}
+.progress-steps li.done::before {
+  background: var(--forest);
+  content: "✓";
+}
+
+.result-image-wrap { position: relative; }
 .result-image-wrap img {
   width: 100%;
   border-radius: 12px;
   border: 1.5px solid var(--border-strong);
   display: block;
 }
+.download-btn {
+  margin-top: 12px;
+  width: 100%;
+}
 
 .attr-area { margin-top: 18px; }
+.attr-area .secondary-btn { margin-top: 12px; }
 
 .feedback-area {
   margin-top: 26px;
@@ -279,5 +381,27 @@ select:focus, input:focus, textarea:focus {
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
 }
 .stat-box .lbl { font-size: 0.78rem; color: var(--ink-mute); margin-top: 4px; }
+
+/* コピー完了トースト */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--ink);
+  color: #fbf8f2;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(58,50,43,0.28);
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 1000;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 .app-footer { text-align: center; padding: 34px; color: var(--ink-mute); }

@@ -1,3 +1,4 @@
+// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -58,6 +59,30 @@ function showToast(msg) {
   }, 1800);
 }
 
+// タスク名を日本語ラベルに変換（計画表示用）
+function taskLabel(t) {
+  const map = {
+    design: "プロンプト設計",
+    enrich_keyword: "キーワード補強",
+    generate: "画像生成",
+    strict_check: "厳格チェック",
+    diversity_boost: "多様性強化",
+    evaluate: "多角評価",
+    attr: "属性生成",
+  };
+  return map[t] || t;
+}
+
+// 分岐結果を日本語ラベルに変換
+function branchLabel(b) {
+  const map = {
+    as_is: "そのまま採用",
+    improved: "品質改善で再生成🔧",
+    sanitized: "安全化で差し替え🛡",
+  };
+  return map[b] || b;
+}
+
 // 生成ボタン
 $("generateBtn").addEventListener("click", async () => {
   const category = $("category").value;
@@ -74,7 +99,7 @@ $("generateBtn").addEventListener("click", async () => {
   $("downloadBtn").hidden = true;
   setProgress(1);
   $("statusArea").textContent =
-    "① プロンプト設計 → ② 過去ナレッジ参照 → ③ 画像生成 → ④ 品質採点 …";
+    "① 計画立案 → ② プロンプト設計 → ③ 画像生成 → ④ 多角評価 …";
 
   // 体感の進捗を進める（実処理は一括だが利用者に流れを見せる）
   const p2 = setTimeout(() => setProgress(2), 1200);
@@ -116,22 +141,52 @@ $("generateBtn").addEventListener("click", async () => {
       : "（簡易プロンプトで生成：Gemini枠回復後はより高品質に）";
     const levelNote = data.realismLabel ? `｜表現: ${data.realismLabel}` : "";
 
-    let qualityNote = "";
-    if (data.qualityScore !== null && data.qualityScore !== undefined) {
-      const improved = data.autoImproved ? "／自動改善済み🔧" : "";
-      qualityNote = `｜品質: ${data.qualityScore}点${improved}`;
-      if (data.qualityComment) {
-        qualityNote += `（AI講評: ${data.qualityComment}）`;
-      }
+    // 【新】動的計画の表示
+    let planNote = "";
+    if (data.plan && Array.isArray(data.plan.tasks)) {
+      const flow = data.plan.tasks.map(taskLabel).join("→");
+      const summary = data.plan.summary ? `（${data.plan.summary}）` : "";
+      planNote = `\n🧭 今回の計画: ${flow}${summary}`;
     }
 
+    // 【新】多角評価の表示（4軸＋総合＋判定分岐）
+    let evalNote = "";
+    if (data.evaluation && data.evaluation.axes) {
+      const a = data.evaluation.axes;
+      const fmt = (v) => (v === null || v === undefined ? "-" : v);
+      evalNote =
+        `\n📊 多角評価: 品質${fmt(a.quality)}/適合${fmt(a.relevance)}/安全${fmt(a.safety)}/多様${fmt(a.diversity)}` +
+        `｜総合${data.evaluation.overall === null ? "-" : data.evaluation.overall}点`;
+      if (data.evaluation.moderationFlagged) {
+        evalNote += `｜⚠モデレーション: ${data.evaluation.moderationReason || "要注意"}`;
+      }
+      if (data.evaluation.critique) {
+        evalNote += `\n💬 AI講評: ${data.evaluation.critique}`;
+      }
+    } else if (data.qualityScore !== null && data.qualityScore !== undefined) {
+      // 後方互換：evaluationが無い場合は旧来の品質スコアを表示
+      evalNote = `\n📊 品質: ${data.qualityScore}点`;
+      if (data.qualityComment) evalNote += `（AI講評: ${data.qualityComment}）`;
+    }
+
+    // 【新】判定分岐の表示
+    let branchNote = "";
+    if (data.decisionBranch) {
+      branchNote = `\n✅ 判定: ${branchLabel(data.decisionBranch)}`;
+    }
+
+    // 回避したNGナレッジ件数（あれば表示）
     const ngNote =
       data.referencedNg && data.referencedNg > 0
         ? `｜回避傾向: ${data.referencedNg}件`
         : "";
 
-    $("statusArea").textContent =
-      `✅ 生成完了 ${geminiNote}${levelNote}${qualityNote}｜参照ナレッジ: ${data.referencedKnowledge}件${ngNote}`;
+    // 改行を活かして表示するため、textContentではなくwhite-space対応で表示
+    const statusEl = $("statusArea");
+    statusEl.style.whiteSpace = "pre-line";
+    statusEl.textContent =
+      `✅ 生成完了 ${geminiNote}${levelNote}｜参照ナレッジ: ${data.referencedKnowledge}件${ngNote}` +
+      planNote + evalNote + branchNote;
 
     if (needAttr) {
       $("attrArea").hidden = false;
@@ -149,6 +204,7 @@ $("generateBtn").addEventListener("click", async () => {
     clearTimeout(p2);
     clearTimeout(p3);
     setProgress(0);
+    $("statusArea").style.whiteSpace = "normal";
     $("statusArea").textContent = "⚠️ エラー詳細: " + e.message;
   } finally {
     btn.disabled = false;
@@ -211,6 +267,7 @@ async function sendFeedback(decision) {
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error("記録に失敗");
+    $("statusArea").style.whiteSpace = "normal";
     $("statusArea").textContent =
       decision === "approved"
         ? "✅ 採用を記録しました。次回のお手本として学習されます。"

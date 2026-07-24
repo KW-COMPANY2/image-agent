@@ -1,4 +1,3 @@
-// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -160,7 +159,7 @@ $("generateBtn").addEventListener("click", async () => {
       planNote = `\n🧭 今回の計画: ${flow}${summary}`;
     }
 
-    // 【新】Best-of-N（候補比較）の表示
+    // Best-of-N（候補比較）の表示
     let candNote = "";
     if (data.candidates && data.candidates.count > 1) {
       const idx = data.candidates.chosenIndex;
@@ -171,7 +170,7 @@ $("generateBtn").addEventListener("click", async () => {
       if (scores) candNote += `（各案スコア: ${scores}）`;
     }
 
-    // 【新】6軸評価の表示
+    // 6軸評価の表示
     let evalNote = "";
     if (data.evaluation && data.evaluation.axes) {
       const a = data.evaluation.axes;

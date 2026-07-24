@@ -1,3 +1,4 @@
+<!-- Output: html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -19,6 +20,7 @@
       <span>4段階の自動処理</span>
       <span>学習ナレッジ参照</span>
       <span>30カテゴリ特化</span>
+      <span>抽象度3段階</span>
     </div>
   </header>
 
@@ -66,6 +68,22 @@
         <option value="住宅">住宅</option>
       </select>
 
+      <label>表現のリアル度（3段階から選択）</label>
+      <div class="realism-selector" id="realismSelector">
+        <button type="button" class="realism-opt active" data-v="abstract">
+          <span class="ro-title">抽象的</span>
+          <span class="ro-desc">色・形による象徴表現</span>
+        </button>
+        <button type="button" class="realism-opt" data-v="semi">
+          <span class="ro-title">ある程度リアル</span>
+          <span class="ro-desc">半具象・上品な情景</span>
+        </button>
+        <button type="button" class="realism-opt" data-v="realistic">
+          <span class="ro-title">リアルで現実的</span>
+          <span class="ro-desc">写真のような写実</span>
+        </button>
+      </div>
+
       <label for="keyword">キーワード（任意・アバウトでOK）</label>
       <input type="text" id="keyword" placeholder="例：安心感、清潔、未来的 など" />
 
@@ -79,16 +97,26 @@
         <label><input type="checkbox" id="needAttr" checked /> alt属性・fetchpriority属性も生成する</label>
       </div>
 
-      <button id="generateBtn" class="primary-btn">✨ </button>
+      <button id="generateBtn" class="primary-btn">✨ 画像を生成する</button>
     </section>
 
     <!-- 出力エリア -->
     <section class="card result-card" id="resultCard" hidden>
       <h2><span class="step-badge">02</span> 生成結果</h2>
+
+      <!-- 進捗インジケーター -->
+      <ol class="progress-steps" id="progressSteps" hidden>
+        <li data-step="1">プロンプト設計</li>
+        <li data-step="2">ナレッジ参照</li>
+        <li data-step="3">画像生成</li>
+        <li data-step="4">属性生成</li>
+      </ol>
+
       <div id="statusArea" class="status"></div>
 
       <div class="result-image-wrap">
         <img id="resultImage" alt="生成された画像" />
+        <button id="downloadBtn" class="secondary-btn download-btn" hidden>⬇ 画像を保存</button>
       </div>
 
       <div id="attrArea" class="attr-area" hidden>
@@ -98,6 +126,7 @@
         <input type="text" id="fetchPriority" readonly />
         <label>コピー用HTMLタグ</label>
         <textarea id="htmlTag" rows="3" readonly></textarea>
+        <button id="copyTagBtn" class="secondary-btn" type="button">📋 HTMLタグをコピー</button>
       </div>
 
       <!-- フィードバック -->
@@ -127,6 +156,9 @@
   <footer class="app-footer">
     <small>Imagenic AI</small>
   </footer>
+
+  <!-- コピー完了トースト -->
+  <div id="toast" class="toast" hidden></div>
 
   <script src="app.js"></script>
 </body>

@@ -1,5 +1,4 @@
 :root {
-  /* 紙とインクのカラーパレット（温もり基調） */
   --paper: #f4efe6;
   --paper-soft: #ece4d6;
   --card-bg: #fbf8f2;
@@ -8,7 +7,6 @@
   --border: #d9cebb;
   --border-strong: #cbbda3;
 
-  /* 自然色アクセント */
   --terra: #c1694f;
   --terra-dark: #a5533c;
   --forest: #5c7457;
@@ -24,7 +22,6 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  /* 発光グラデを廃し、和紙のような微細な質感に */
   background:
     radial-gradient(1200px 700px at 15% -10%, rgba(193,105,79,0.06), transparent),
     radial-gradient(900px 500px at 100% 0%, rgba(92,116,87,0.05), transparent),
@@ -54,7 +51,6 @@ body {
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--ink);
-  /* 見出しは明朝体で手紙のような温かさ */
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
 }
 .subtitle { color: var(--ink-mute); margin-top: 12px; }

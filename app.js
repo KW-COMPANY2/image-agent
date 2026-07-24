@@ -1,3 +1,4 @@
+// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -58,7 +59,7 @@ function showToast(msg) {
   }, 1800);
 }
 
-// タスク名を日本語ラベルに変換（計画表示用）
+// タスク名を日本語ラベルに変換
 function taskLabel(t) {
   const map = {
     design: "プロンプト設計",
@@ -95,6 +96,16 @@ function axisLabel(a) {
   return map[a] || a;
 }
 
+// 外部ツール名を日本語ラベルに変換
+function toolLabel(t) {
+  const map = {
+    color: "配色API",
+    related: "関連語API",
+    refmeta: "参照メタAPI",
+  };
+  return map[t] || t;
+}
+
 // 生成ボタン
 $("generateBtn").addEventListener("click", async () => {
   const category = $("category").value;
@@ -111,7 +122,7 @@ $("generateBtn").addEventListener("click", async () => {
   $("downloadBtn").hidden = true;
   setProgress(1);
   $("statusArea").textContent =
-    "① 計画立案 → ② 複数案設計＆選抜 → ③ 画像生成 → ④ 6軸評価 …";
+    "① 計画 → ② 外部ツール連携 → ③ 複数案設計＆選抜 → ④ 生成 → ⑤ 6軸評価 …";
 
   const p2 = setTimeout(() => setProgress(2), 1200);
   const p3 = setTimeout(() => setProgress(3), 3000);
@@ -159,7 +170,23 @@ $("generateBtn").addEventListener("click", async () => {
       planNote = `\n🧭 今回の計画: ${flow}${summary}`;
     }
 
-    // Best-of-N（候補比較）の表示
+    // 【新】外部ツール連携の表示
+    let toolNote = "";
+    if (data.tools) {
+      const ok = [];
+      if (data.tools.color) ok.push(toolLabel("color"));
+      if (data.tools.related) ok.push(toolLabel("related"));
+      if (data.tools.refmeta) ok.push(toolLabel("refmeta"));
+      toolNote = `\n🔌 外部連携: ${ok.length ? ok.join("・") + " 使用" : "なし"}`;
+      if (Array.isArray(data.tools.failed) && data.tools.failed.length) {
+        toolNote += `（保険発動: ${data.tools.failed.map(toolLabel).join("・")}）`;
+      }
+      if (Array.isArray(data.tools.relatedWords) && data.tools.relatedWords.length) {
+        toolNote += `\n🔤 拡張された関連概念: ${data.tools.relatedWords.join(", ")}`;
+      }
+    }
+
+    // Best-of-N の表示
     let candNote = "";
     if (data.candidates && data.candidates.count > 1) {
       const idx = data.candidates.chosenIndex;
@@ -179,7 +206,6 @@ $("generateBtn").addEventListener("click", async () => {
         `\n📊 6軸評価: 品質${fmt(a.quality)}/適合${fmt(a.relevance)}/安全${fmt(a.safety)}` +
         `/多様${fmt(a.diversity)}/美的${fmt(a.aesthetics)}/明瞭${fmt(a.clarity)}` +
         `｜総合${data.evaluation.overall === null ? "-" : data.evaluation.overall}点`;
-      // 弱点軸の表示
       if (Array.isArray(data.evaluation.weakAxes) && data.evaluation.weakAxes.length > 0) {
         evalNote += `\n🔍 弱点軸: ${data.evaluation.weakAxes.map(axisLabel).join("・")}`;
       }
@@ -209,7 +235,7 @@ $("generateBtn").addEventListener("click", async () => {
     statusEl.style.whiteSpace = "pre-line";
     statusEl.textContent =
       `✅ 生成完了 ${geminiNote}${levelNote}｜参照ナレッジ: ${data.referencedKnowledge}件${ngNote}` +
-      planNote + candNote + evalNote + branchNote;
+      planNote + toolNote + candNote + evalNote + branchNote;
 
     if (needAttr) {
       $("attrArea").hidden = false;

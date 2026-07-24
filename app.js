@@ -1,3 +1,4 @@
+// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -74,7 +75,7 @@ $("generateBtn").addEventListener("click", async () => {
   $("downloadBtn").hidden = true;
   setProgress(1);
   $("statusArea").textContent =
-    "① プロンプト設計 → ② 過去ナレッジ参照 → ③ 画像生成 → ④ 属性生成 …";
+    "① プロンプト設計 → ② 過去ナレッジ参照 → ③ 画像生成 → ④ 品質採点 …";
 
   // 体感の進捗を進める（実処理は一括だが利用者に流れを見せる）
   const p2 = setTimeout(() => setProgress(2), 1200);
@@ -115,8 +116,24 @@ $("generateBtn").addEventListener("click", async () => {
       ? "（Geminiでプロンプト最適化）"
       : "（簡易プロンプトで生成：Gemini枠回復後はより高品質に）";
     const levelNote = data.realismLabel ? `｜表現: ${data.realismLabel}` : "";
+
+    // 【新】品質スコア・自動改善の表示（採点が取れた場合のみ）
+    let qualityNote = "";
+    if (data.qualityScore !== null && data.qualityScore !== undefined) {
+      const improved = data.autoImproved ? "／自動改善済み🔧" : "";
+      qualityNote = `｜品質: ${data.qualityScore}点${improved}`;
+      if (data.qualityComment) {
+        qualityNote += `（AI講評: ${data.qualityComment}）`;
+      }
+    }
+    // 【新】回避したNGナレッジ件数（あれば表示）
+    const ngNote =
+      data.referencedNg && data.referencedNg > 0
+        ? `｜回避傾向: ${data.referencedNg}件`
+        : "";
+
     $("statusArea").textContent =
-      `✅ 生成完了 ${geminiNote}${levelNote}｜参照ナレッジ: ${data.referencedKnowledge}件`;
+      `✅ 生成完了 ${geminiNote}${levelNote}${qualityNote}｜参照ナレッジ: ${data.referencedKnowledge}件${ngNote}`;
 
     if (needAttr) {
       $("attrArea").hidden = false;
@@ -137,7 +154,7 @@ $("generateBtn").addEventListener("click", async () => {
     $("statusArea").textContent = "⚠️ エラー詳細: " + e.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = "✨ 画像を生成する";
+    btn.textContent = "✨ ";
   }
 });
 
@@ -210,12 +227,18 @@ $("loadStatsBtn").addEventListener("click", async () => {
   try {
     const res = await fetch(`${WORKER_URL}/stats`);
     const s = await res.json();
+    // 【新】平均品質スコアのボックスを追加（値が取れない場合は0表示）
+    const avgQ =
+      s.avgQualityScore !== undefined && s.avgQualityScore !== null
+        ? s.avgQualityScore
+        : 0;
     $("statsArea").innerHTML = `
       <div class="stat-box"><div class="num">${s.totalGenerated}</div><div class="lbl">累計生成数</div></div>
       <div class="stat-box"><div class="num">${s.approved}</div><div class="lbl">採用数</div></div>
       <div class="stat-box"><div class="num">${s.approvalRate}%</div><div class="lbl">採用率</div></div>
       <div class="stat-box"><div class="num">${s.knowledgeCount}</div><div class="lbl">お手本ナレッジ数</div></div>
       <div class="stat-box"><div class="num">${s.avgRating}</div><div class="lbl">平均評価</div></div>
+      <div class="stat-box"><div class="num">${avgQ}</div><div class="lbl">平均品質スコア</div></div>
     `;
   } catch (e) {
     $("statsArea").textContent = "読み込み失敗: " + e.message;

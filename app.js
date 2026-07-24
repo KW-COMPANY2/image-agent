@@ -1,11 +1,14 @@
-const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
+// File: app.js
 
-let currentResult = null; // 直近の生成結果を保持
+// ▼▼▼ あなたのWorkerのURL ▼▼▼
+const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+let currentResult = null;
 let currentRating = 0;
 
 const $ = (id) => document.getElementById(id);
 
-// 星評価
 document.querySelectorAll("#stars span").forEach((star) => {
   star.addEventListener("click", () => {
     currentRating = Number(star.dataset.v);
@@ -15,7 +18,6 @@ document.querySelectorAll("#stars span").forEach((star) => {
   });
 });
 
-// 生成ボタン
 $("generateBtn").addEventListener("click", async () => {
   const category = $("category").value;
   const keyword = $("keyword").value.trim();
@@ -36,7 +38,19 @@ $("generateBtn").addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ category, keyword, usage, needAttr }),
     });
-    if (!res.ok) throw new Error("生成に失敗しました（無料枠超過の可能性）");
+
+    // 本当のエラー内容を取得して表示
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const errData = await res.json();
+        detail = errData.error || JSON.stringify(errData);
+      } catch (_) {
+        detail = await res.text();
+      }
+      throw new Error(`HTTP ${res.status} / ${detail}`);
+    }
+
     const data = await res.json();
     currentResult = data;
     currentRating = 0;
@@ -55,14 +69,13 @@ $("generateBtn").addEventListener("click", async () => {
       $("attrArea").hidden = true;
     }
   } catch (e) {
-    $("statusArea").textContent = "⚠️ " + e.message;
+    $("statusArea").textContent = "⚠️ エラー詳細: " + e.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = "✨ 画像を生成する";
+    btn.textContent = "✨ ";
   }
 });
 
-// 採用／却下（Closed Loop）
 $("approveBtn").addEventListener("click", () => sendFeedback("approved"));
 $("rejectBtn").addEventListener("click", () => sendFeedback("rejected"));
 
@@ -86,14 +99,13 @@ async function sendFeedback(decision) {
     if (!res.ok) throw new Error("記録に失敗");
     $("statusArea").textContent =
       decision === "approved"
-        ? "✅ 採用を記録しました。このプロンプトは次回のお手本として学習されます。"
-        : "❌ 却下を記録しました。次回はこの傾向を避けるよう調整されます。";
+        ? "✅ 採用を記録しました。次回のお手本として学習されます。"
+        : "❌ 却下を記録しました。次回はこの傾向を避けます。";
   } catch (e) {
     $("statusArea").textContent = "⚠️ " + e.message;
   }
 }
 
-// 学習ダッシュボード
 $("loadStatsBtn").addEventListener("click", async () => {
   try {
     const res = await fetch(`${WORKER_URL}/stats`);

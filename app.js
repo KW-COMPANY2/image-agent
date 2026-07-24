@@ -9,6 +9,7 @@ let currentRating = 0;
 
 const $ = (id) => document.getElementById(id);
 
+// 星評価
 document.querySelectorAll("#stars span").forEach((star) => {
   star.addEventListener("click", () => {
     currentRating = Number(star.dataset.v);
@@ -18,6 +19,7 @@ document.querySelectorAll("#stars span").forEach((star) => {
   });
 });
 
+// 生成ボタン
 $("generateBtn").addEventListener("click", async () => {
   const category = $("category").value;
   const keyword = $("keyword").value.trim();
@@ -57,7 +59,11 @@ $("generateBtn").addEventListener("click", async () => {
     document.querySelectorAll("#stars span").forEach((s) => s.classList.remove("active"));
 
     $("resultImage").src = data.imageDataUrl;
-    $("statusArea").textContent = `✅ 生成完了（参照した過去ナレッジ: ${data.referencedKnowledge}件）`;
+    const geminiNote = data.geminiUsed
+      ? "（Geminiでプロンプト最適化）"
+      : "（簡易プロンプトで生成：Gemini枠回復後はより高品質に）";
+    $("statusArea").textContent =
+      `✅ 生成完了 ${geminiNote}｜参照ナレッジ: ${data.referencedKnowledge}件`;
 
     if (needAttr) {
       $("attrArea").hidden = false;
@@ -76,6 +82,7 @@ $("generateBtn").addEventListener("click", async () => {
   }
 });
 
+// 採用／却下（Closed Loop）
 $("approveBtn").addEventListener("click", () => sendFeedback("approved"));
 $("rejectBtn").addEventListener("click", () => sendFeedback("rejected"));
 
@@ -106,6 +113,7 @@ async function sendFeedback(decision) {
   }
 }
 
+// 学習ダッシュボード
 $("loadStatsBtn").addEventListener("click", async () => {
   try {
     const res = await fetch(`${WORKER_URL}/stats`);

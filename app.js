@@ -1,4 +1,3 @@
-// File: app.js
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
 
 let currentResult = null;
@@ -141,7 +140,7 @@ $("generateBtn").addEventListener("click", async () => {
       : "（簡易プロンプトで生成：Gemini枠回復後はより高品質に）";
     const levelNote = data.realismLabel ? `｜表現: ${data.realismLabel}` : "";
 
-    // 【新】動的計画の表示
+    // 動的計画の表示
     let planNote = "";
     if (data.plan && Array.isArray(data.plan.tasks)) {
       const flow = data.plan.tasks.map(taskLabel).join("→");
@@ -149,7 +148,7 @@ $("generateBtn").addEventListener("click", async () => {
       planNote = `\n🧭 今回の計画: ${flow}${summary}`;
     }
 
-    // 【新】多角評価の表示（4軸＋総合＋判定分岐）
+    // 多角評価の表示（4軸＋総合＋判定分岐）
     let evalNote = "";
     if (data.evaluation && data.evaluation.axes) {
       const a = data.evaluation.axes;
@@ -169,7 +168,7 @@ $("generateBtn").addEventListener("click", async () => {
       if (data.qualityComment) evalNote += `（AI講評: ${data.qualityComment}）`;
     }
 
-    // 【新】判定分岐の表示
+    // 判定分岐の表示
     let branchNote = "";
     if (data.decisionBranch) {
       branchNote = `\n✅ 判定: ${branchLabel(data.decisionBranch)}`;

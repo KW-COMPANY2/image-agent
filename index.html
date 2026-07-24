@@ -1,8 +1,9 @@
+<!-- Output: html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-   <meta name="robots" content="noindex">
+  <meta name="robots" content="noindex">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Imagenic AI｜イメージ画像AIエージェント</title>
   <link rel="stylesheet" href="style.css" />
@@ -13,13 +14,23 @@
       <span class="brand-mark">◈</span>
       <h1 class="brand-name">Imagenic&nbsp;AI</h1>
     </div>
-    <p class="subtitle">カテゴリを選ぶだけ。<strong>使うほど賢くなる</strong>イメージ画像エージェント。</p>
+    <p class="subtitle">Web記事画像に特化。カテゴリを選ぶだけ、<strong>使うほど賢くなる</strong>イメージ画像エージェント。</p>
+    <div class="agent-badges">
+      <span>外部AI連携（Gemini／Workers AI）</span>
+      <span>4段階の自動処理</span>
+      <span>学習ナレッジ参照</span>
+      <span>30カテゴリ特化</span>
+    </div>
   </header>
 
   <main class="container">
     <!-- 入力エリア -->
     <section class="card">
       <h2><span class="step-badge">01</span> 生成条件を指定</h2>
+
+      <div class="pipeline">
+        <b>自動処理の流れ</b>：① プロンプト設計<span class="arrow">→</span>② 過去ナレッジ参照<span class="arrow">→</span>③ 画像生成<span class="arrow">→</span>④ 属性生成
+      </div>
 
       <label for="category">コンテンツカテゴリ</label>
       <select id="category">

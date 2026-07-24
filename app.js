@@ -1,8 +1,4 @@
-// File: app.js
-
-// ▼▼▼ あなたのWorkerのURL ▼▼▼
 const WORKER_URL = "https://image-agent.skunkonsen.workers.dev";
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 let currentResult = null;
 let currentRating = 0;
@@ -82,7 +78,7 @@ $("generateBtn").addEventListener("click", async () => {
   }
 });
 
-// 採用／却下（Closed Loop）
+// 採用／却下
 $("approveBtn").addEventListener("click", () => sendFeedback("approved"));
 $("rejectBtn").addEventListener("click", () => sendFeedback("rejected"));
 
